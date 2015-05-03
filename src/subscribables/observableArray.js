@@ -86,6 +86,74 @@ ko.observableArray['fn'] = {
             this.peek()[index] = newItem;
             this.valueHasMutated();
         }
+    },
+
+    'map': function (array, mapping) {
+        this(ko.utils.arrayMap(array, mapping));
+    },
+
+    'merge': function (array, mapping, update, matchPredicate) {
+        var oArray = this;
+        if (!array || array.length === 0) {
+            this.removeAll();
+            return;
+        }
+
+        if (this().length === 0) {
+            this.map(array, mapping);
+            return;
+        }
+
+        ko.utils.arrayForEach(array, function(item, index) {
+            var existingItem = oArray()[index];
+            if (matchPredicate(item, existingItem)) {
+                update(item, existingItem);
+            }
+        });
+
+
+        //var serverArrayDic, observableArrayDic;
+
+        //// if observable array is empty, then just rebuild observable array (no need to merge)
+        //if (this().length === 0) {
+        //    rebuildObservableArray(this, serverArray, ItemFactory, itemUpdateCallback);
+        //    return;
+        //}
+
+        //// build id dictionaries that we later use for key lookup
+        //serverArrayDic = getDictionary(idPropertyName, serverArray);
+        //observableArrayDic = getDictionary(idPropertyName, this());
+
+        //// foreach server array
+        //$.each(serverArray, function (serverItem, index) {
+        //    // if id and index don't match, adjust
+        //    var serverId = serverItem[idPropertyName];
+        //    if (serverId !== this()[index][idPropertyName]) {
+
+        //        var matchingItem = observableArrayDic[serverId];
+        //        if (matchingItem) {
+        //            // delete unexisting
+        //            while (!serverArrayDic[this()[index][idPropertyName]]) {
+        //                this.splice(index, 1);
+        //            }
+
+        //            //remove and insert at position
+        //            this.remove(matchingItem);
+        //            this.splice(index, 0, matchingItem);
+        //        } else {
+        //            // If doesn't exist, create and insert at position    
+        //            this.splice(index, 0, new ItemFactory(this, index));
+        //        }
+        //    }
+
+        //    // after index and id are matching, do the update
+        //    itemUpdateCallback(this()[index], serverItem, index);
+        //});
+
+        //// remove sufficient (index > serverArray.length)
+        //while (this().length > serverArray.length) {
+        //    this.pop();
+        //}
     }
 };
 

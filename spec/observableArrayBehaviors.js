@@ -322,4 +322,74 @@ describe('Observable Array', function() {
         expect(observableArray.customFunction1).toBe(customFunction1);
         expect(observableArray.customFunction2).toBe(customFunction2);
     });
+
+    it('Should have map function that recreates observable array based on array and map function and raises only 1 notification', function () {
+        testObservableArray.map([4, 5, 6], function(item, index) {
+            return item + '-' + index;
+        });
+
+        expect(testObservableArray()).toEqual(['4-0','5-1','6-2']);
+        expect(notifiedValues).toEqual([['4-0', '5-1', '6-2']]);
+    });
+
+    it('Should have merge function that has same behavior as map when original array is empty', function () {
+        testObservableArray([]);
+        notifiedValues = [];
+
+        var mapFunction = function (item, index) {
+            return item + '-' + index;
+        };
+
+        testObservableArray.merge([4, 5, 6], mapFunction);
+
+        expect(testObservableArray()).toEqual(['4-0', '5-1', '6-2']);
+        expect(notifiedValues).toEqual([['4-0', '5-1', '6-2']]);
+    });
+
+    it('Should have merge function that has same behavior as removeAll when new array is empty', function () {
+        testObservableArray.merge([]);
+
+        expect(testObservableArray()).toEqual([]);
+        expect(notifiedValues).toEqual([[]]);
+    });
+
+    it('Should have merge function that updated all data that mathc', function () {
+        testObservableArray([
+            { id: 1, name: ko.observable("first") },
+            { id: 2, name: ko.observable("second") },
+            { id: 3, name: ko.observable("third") }
+        ]);
+        notifiedValues = [];
+      
+        testObservableArray.merge([
+            { id: 1, name: "1st" },
+            { id: 2, name: "2nd" },
+            { id: 3, name: "3rd" }
+        ], function (item) {
+            return { id: item.id, name: ko.observable(item.name) };
+        }, function(item, existingItem) {
+            existingItem.name(item.name);
+        }, function(item, existingItem) {
+            return item.id === existingItem.id;
+        });
+
+        expect(testObservableArray()[0].id).toEqual(1);
+        expect(testObservableArray()[0].name()).toEqual("1st");
+        expect(testObservableArray()[1].id).toEqual(2);
+        expect(testObservableArray()[1].name()).toEqual("2nd");
+        expect(testObservableArray()[2].id).toEqual(3);
+        expect(testObservableArray()[2].name()).toEqual("3rd");
+
+        expect(notifiedValues).toEqual([]);
+    });
+
+    // to do
+    // kada ima vise u jedno
+    // kada ima vise u drugom
+    // kada se ne da match funkcija
+    // proveriti delate change evente kako se podizu
+    // izmeriti performanse
+    // ako ima vise za izbacivanje da se izbace u jednom canku
+    // da li da detektujem reorder?
+    // sta ako mi se ne da predikat match funkcija? da li da idem po indexu?
 })
